@@ -1,6 +1,8 @@
 import os
 import sys
 import openai
+from langchain_openai import ChatOpenAI
+from langchain.prompts import PromptTemplate, ChatPromptTemplate
 from typing import List
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -8,6 +10,21 @@ import numpy as np
 
 # Set your OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+
+# Create text splitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+def chunk_text(text, chunk_size=1000, overlap=200):
+    text_splitter = RecursiveCharacterTextSplitter(
+        separators=["\n\n", "\n", " ", ""],
+        chunk_size = chunk_size,
+        chunk_overlap = overlap,
+        text_length = len(text)
+    )
+    chunks = text_splitter.split_text(text)
+    return chunks
+
 
 # Load embedding model
 embedder = SentenceTransformer('all-MiniLM-L6-v2')
