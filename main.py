@@ -44,6 +44,13 @@ def create_faiss_index(vectors, chunks):
     vectorstore = FAISS.from_documents(chunks, vectors)
     return vectorstore
 
+# Retrieval function
+def retrieve_docs(vectorstore, query, k=3):
+    retriever = vectorstore.as_retriever(
+        search_type = "similarity",
+        search_kwags = {"k":3}
+    )
+
 # Example knowledge base (replace with your own documents)
 documents = [
     "Python is a popular programming language.",
