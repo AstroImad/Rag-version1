@@ -27,7 +27,15 @@ def chunk_text(text, chunk_size=1000, overlap=200):
 
 
 # Load embedding model
-embedder = SentenceTransformer('all-MiniLM-L6-v2')
+#from langchain_openai import OpenAIEmbeddings  #when using OpenAI
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import FAISS
+
+def get_embeddings(chunks):
+    #embedding_function = OpenAIEmbeddings()  #when using OpenAI
+    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    vectors = embedding_model.embed_documents(chunks)
+    return vectors
 
 # Example knowledge base (replace with your own documents)
 documents = [
