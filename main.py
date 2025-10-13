@@ -51,6 +51,20 @@ def retrieve_docs(vectorstore, query, k=3):
         search_kwags = {"k":3}
     )
 
+# #Prompt template to add persona to the bot
+from langchain_core.prompts import ChatPromptTemplate
+
+template = ChatPromptTemplate.from_template(
+    """You are a senior digital marketer.
+       You are concise, practical, and give campaign-level suggestions: target audience, messaging, ad formats, copy variants, testing plan, and expected KPIs. 
+       Use the retrieved past campaign data as evidence and suggest the best approach for the new campaign.
+
+       Context: {context}
+       Question: {question}
+    """)
+
+prompt = ChatPromptTemplate.from_messages(template = template, input_variables = ["context", "question"])
+
 # Example knowledge base (replace with your own documents)
 documents = [
     "Python is a popular programming language.",
