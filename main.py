@@ -1,0 +1,60 @@
+import os
+import sys
+import openai
+from typing import List
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
+# Set your OpenAI API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Load embedding model
+embedder = SentenceTransformer('all-MiniLM-L6-v2')
+
+# Example knowledge base (replace with your own documents)
+documents = [
+    "Python is a popular programming language.",
+    "RAG stands for Retrieval-Augmented Generation.",
+    "OpenAI provides powerful language models.",
+    "Sentence Transformers are used for embeddings."
+]
+
+# Precompute document embeddings
+doc_embeddings = embedder.encode(documents)
+
+def retrieve_relevant_docs(query: str, k: int = 2) -> List[str]:
+    query_embedding = embedder.encode([query])
+    similarities = cosine_similarity(query_embedding, doc_embeddings)[0]
+    top_k_idx = np.argsort(similarities)[-k:][::-1]
+    return [documents[i] for i in top_k_idx]
+
+def generate_answer(query: str, context: List[str]) -> str:
+    prompt = (
+        "You are a helpful assistant. Use the following context to answer the question.\n\n"
+        "Context:\n" + "\n".join(context) + "\n\n"
+        f"Question: {query}\nAnswer:"
+    )
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=200,
+        temperature=0.2,
+    )
+    return response['choices'][0]['message']['content'].strip()
+
+def chat():
+    print("RAG LLM Chatbot. Type 'exit' to quit.")
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() == "exit":
+            break
+        context = retrieve_relevant_docs(user_input)
+        answer = generate_answer(user_input, context)
+        print("Bot:", answer)
+
+if __name__ == "__main__":
+    if not openai.api_key:
+        print("Please set the OPENAI_API_KEY environment variable.")
+        sys.exit(1)
+    chat()
