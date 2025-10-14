@@ -12,10 +12,11 @@ from langchain_community.document_loaders import PyPDFLoader
 
 def load_pdf(file_path):
     loader = PyPDFLoader(file_path)
-    documents = loader.load()
-    return documents
+    text = loader.load()
+    return text
 
 # Create text splitter
+# Text or document (change dependending on the loader output)
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 def chunk_text(text, chunk_size=1000, overlap=200):
@@ -23,7 +24,6 @@ def chunk_text(text, chunk_size=1000, overlap=200):
         separators=["\n\n", "\n", " ", ""],
         chunk_size = chunk_size,
         chunk_overlap = overlap,
-        text_length = len(text)
     )
     chunks = text_splitter.split_text(text)
     return chunks
