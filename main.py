@@ -5,7 +5,15 @@ import os
 import numpy as np
 
 # Set your OpenAI API key
-llm = ChatOpenAI(model = "gpt-3.5-turbo", api_key = "API KEY", temperature = 0)
+#llm = ChatOpenAI(model = "gpt-3.5-turbo", api_key = "API KEY", temperature = 0)
+
+# PDF loader
+from langchain_community.document_loaders import PyPDFLoader
+
+def load_pdf(file_path):
+    loader = PyPDFLoader(file_path)
+    documents = loader.load()
+    return documents
 
 # Create text splitter
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -33,15 +41,15 @@ def get_embeddings(chunks):
 
 
 # Setting up FAISS vector database
-from langchain.vectorstores import FAISS
+from langchain.vectorstores import Pinecone
 
 def create_faiss_index(vectors, chunks):
-    vectorstore = FAISS.from_documents(chunks, vectors)
+    vectorstore = Pinecone.from_documents(chunks, vectors)
     return vectorstore
 
 
 # Retrieval function
-def retrieve_docs(vectorstore, query, k=3):
+def retrieve_docs(vectorstore):
     retriever = vectorstore.as_retriever(
         search_type = "similarity",
         search_kwags = {"k":3}
@@ -67,6 +75,7 @@ prompt = ChatPromptTemplate.from_messages(template = template, input_variables =
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
+retriever = retrieve_docs(vectorstore)
 rag_chain = (
     {"context": retriever, "question": RunnablePassthrough()}
     |prompt
