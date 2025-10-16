@@ -1,15 +1,20 @@
 import openai
-from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate, ChatPromptTemplate
 import os
-import numpy as np
-from langchain_community.llms import HuggingFaceHub
-#from langchain_community.vectorstores import Pinecone
-from dotenv import load_dotenv
-from pinecone import Pinecone, ServerlessSpec
-from langchain_pinecone import Pinecone as PineconeLangChain
 import time
+from PIL import Image
+from io import BytesIO
 
+# LangChain Imports
+from langchain_pinecone import Pinecone as PineconeLangChain
+from langchain_openai import ChatOpenAI
+from langchain_huggingface import HuggingFacePipeline
+from langchain.prompts import PromptTemplate, ChatPromptTemplate
+
+# Vector Store & Embeddings Imports
+from pinecone import Pinecone, ServerlessSpec
+
+# Environment Setup
+from dotenv import load_dotenv
 load_dotenv()
 
 # Environment variable setup
@@ -60,7 +65,6 @@ print("🔑 Pinecone key loaded:", os.getenv("PINECONE_API_KEY"))
 
 # Set your OpenAI API key
 #llm = ChatOpenAI(model = "gpt-4.0-mini", api_key = "API KEY", temperature = 0)
-from langchain_huggingface import HuggingFacePipeline
 
 llm = HuggingFacePipeline.from_model_id(
     model_id="google/flan-t5-base",  # or "meta-llama/Llama-2-7b-chat-hf" #mistralai/Mistral-7B-Instruct-v0.2
@@ -71,6 +75,7 @@ llm = HuggingFacePipeline.from_model_id(
 
 # PDF loader
 from langchain_community.document_loaders import PyPDFLoader
+
 pdf_path = "/home/imad/Rag-version1/data-test/ESSB Showroom Poster.pdf"
 
 def load_pdf(pdf_path):
