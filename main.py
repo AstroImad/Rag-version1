@@ -9,6 +9,7 @@ from langchain_pinecone import Pinecone as PineconeLangChain
 from langchain_openai import ChatOpenAI
 from langchain_huggingface import HuggingFacePipeline
 from langchain.prompts import PromptTemplate, ChatPromptTemplate
+from langchain.document_loaders import UnstructuredFileLoader
 
 # Vector Store & Embeddings Imports
 from pinecone import Pinecone, ServerlessSpec
@@ -77,11 +78,19 @@ llm = HuggingFacePipeline.from_model_id(
 from langchain_community.document_loaders import PyPDFLoader
 
 pdf_path = "/home/imad/Rag-version1/data-test/ESSB Showroom Poster.pdf"
+image_save_path = "./images" # folder to save extracted images
+os.makedirs(image_save_path, exist_ok=True)
 
-def load_pdf(pdf_path):
-    loader = PyPDFLoader(pdf_path)
+def pdf_and_images(pdf_path, image_save_path):
+    print("Extracting content from PDF...")
+    loader = UnstructuredFileLoader(
+        pdf_path,
+        mode = "elements",
+        strategy = "fast",)
+
     documents = loader.load()
-    return documents
+    image_paths = []
+    return documents, image_paths
 
 
 # Create text splitter
@@ -102,7 +111,7 @@ def chunk_text(documents, chunk_size=1000, overlap=200):
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
 def create_vectorstore(chunks):
-    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    embedding_model = HuggingFaceEmbeddings(model_name="clip-ViT-B-32")
 
     vectorstore = PineconeLangChain.from_documents(
         documents=chunks,
@@ -171,7 +180,7 @@ if __name__ == "__main__":
         setup_pinecone()
         
         print("\nStep 2: Loading PDF document...")
-        docs = load_pdf(pdf_path)
+        docs = pdf_and_images(pdf_path, image_save_path)
         
         print("\nStep 3: Chunking documents...")
         chunks = chunk_text(docs)
